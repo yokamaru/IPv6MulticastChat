@@ -31,10 +31,6 @@ public class MulticastManager {
      */
     protected WifiManager.MulticastLock multicast_lock;
 
-    public MulticastManager() {
-
-    }
-
     /**
      * Join the specified multicast group.
      * 
