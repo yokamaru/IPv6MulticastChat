@@ -73,7 +73,12 @@ public class MulticastManager {
      * Leave the multicast group that already joined.
      */
     public void leave() {
-
+        try {
+            this.socket.leaveGroup(this.group_address);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
