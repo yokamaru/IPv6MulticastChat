@@ -1,5 +1,10 @@
 package jp.naist.inet_lab.android.ipv6multicast;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.UnknownHostException;
+
 import android.content.Context;
 import android.net.wifi.WifiManager;
 
@@ -10,6 +15,16 @@ import android.net.wifi.WifiManager;
  * 
  */
 public class MulticastManager {
+
+    /**
+     * An address of the joined multicast group.
+     */
+    InetAddress group_address;
+
+    /**
+     * A socket for communicating over the multicast.
+     */
+    MulticastSocket socket;
 
     /**
      * A state of a MulticastLock on the WiFi interface
@@ -23,11 +38,39 @@ public class MulticastManager {
     /**
      * Join the specified multicast group.
      * 
-     * @param group_address
-     *            Address of the multicast group (Human readable string)
+     * @param group_address_hr
+     *            An address of the multicast group (Human-readable string)
+     * @param local_port
+     *            A port number which bind on the local. If specify 0 as a port
+     *            number, it may automatically choose a port number from
+     *            available ports.
+     * @throws UnknownHostException
+     *             The specified group address is not found, or invalid format.
      */
-    public void join(String group_address) {
+    public void join(String group_address_hr, int local_port)
+            throws UnknownHostException {
+        // Convert the human-readable address to a machine-readable address
+        this.group_address = InetAddress.getByName(group_address_hr);
 
+        // Create a socket and join the multicast group
+        try {
+            this.socket = new MulticastSocket(local_port);
+            this.socket.joinGroup(this.group_address);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Join the specified multicast group.
+     * 
+     * A local port will automatically chosen from available ports.
+     * 
+     * @see MulticastManager#join(String, int)
+     */
+    public void join(String group_address_hr) throws UnknownHostException {
+        this.join(group_address_hr, 0);
     }
 
     /**
