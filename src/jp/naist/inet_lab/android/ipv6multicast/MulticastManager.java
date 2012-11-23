@@ -115,10 +115,21 @@ public class MulticastManager {
      * 
      * @param buffer_size
      *            Maximum size by byte that I receive
-     * @return Size of the data that I actually received
+     * @return Received data
+     * @throws MulticastException
      */
-    public int receiveData(int buffer_size) {
-        return 0;
+    public byte[] receiveData(int buffer_size) throws MulticastException {
+        byte[] buffer = new byte[buffer_size];
+
+        // Build packet and receive data into it
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        try {
+            this.socket.receive(packet);
+        } catch (IOException e) {
+            throw new MulticastException(e);
+        }
+
+        return buffer;
     }
 
     /**
