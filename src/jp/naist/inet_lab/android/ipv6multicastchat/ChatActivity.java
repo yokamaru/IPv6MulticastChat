@@ -151,15 +151,20 @@ public class ChatActivity extends Activity {
      * @param message
      *            A message to be sent
      */
-    protected void sendMessage(String message) {
-
-        try {
-            this.multicastManager
-                    .sendData(message.getBytes(), this.PORT_NUMBER);
-        } catch (MulticastException e) {
-            Toast.makeText(this, "Faild to send the group.", Toast.LENGTH_LONG)
-                    .show();
-        }
+    protected void sendMessage(final String message) {
+        Thread send = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    multicastManager.sendData(message.getBytes(), PORT_NUMBER);
+                } catch (MulticastException e) {
+                    Toast.makeText(getApplicationContext(),
+                            "Faild to send the group.", Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+        });
+        send.start();
     }
 
     protected void startReceiveMessage() {
