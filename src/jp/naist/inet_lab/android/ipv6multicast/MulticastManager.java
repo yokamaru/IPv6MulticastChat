@@ -26,6 +26,11 @@ public class MulticastManager {
      * A socket for communicating over the multicast.
      */
     MulticastSocket socket;
+    
+    /**
+     * Is joining a multicast group or not
+     */
+    boolean joined = false;
 
     /**
      * A state of a MulticastLock on the WiFi interface
@@ -49,11 +54,14 @@ public class MulticastManager {
             throws MulticastException {
         try {
             // Convert the human-readable address to a machine-readable address
-            this.groupAddress = InetAddress.getByName(groupAddressByHumanReadable);
+            this.groupAddress = InetAddress
+                    .getByName(groupAddressByHumanReadable);
 
             // Create a socket and join the multicast group
             this.socket = new MulticastSocket(localPort);
             this.socket.joinGroup(this.groupAddress);
+            
+            this.joined = true;
         } catch (UnknownHostException e) {
             throw new MulticastException(e);
         } catch (IOException e) {
@@ -70,7 +78,8 @@ public class MulticastManager {
      * 
      * @see MulticastManager#join(String, int)
      */
-    public void join(String groupAddressByHumanReadable) throws MulticastException {
+    public void join(String groupAddressByHumanReadable)
+            throws MulticastException {
         this.join(groupAddressByHumanReadable, 0);
     }
 
@@ -82,6 +91,8 @@ public class MulticastManager {
     public void leave() throws MulticastException {
         try {
             this.socket.leaveGroup(this.groupAddress);
+            
+            this.joined = false;
         } catch (IOException e) {
             throw new MulticastException(e);
         }
@@ -160,6 +171,15 @@ public class MulticastManager {
      */
     public void disableMulticastOnWifi() {
         this.multicastLock.release();
+    }
+
+    /**
+     * Check is joining the multicast group or not.
+     * 
+     * @return true if joining the multicast group
+     */
+    public boolean isJoined() {
+        return this.joined;
     }
 
 }
