@@ -43,19 +43,21 @@ public class MulticastManager {
      *            available ports.
      * @throws UnknownHostException
      *             The specified group address is not found, or invalid format.
+     * @throws MulticastException
      */
     public void join(String group_address_hr, int local_port)
-            throws UnknownHostException {
-        // Convert the human-readable address to a machine-readable address
-        this.group_address = InetAddress.getByName(group_address_hr);
-
-        // Create a socket and join the multicast group
+            throws MulticastException {
         try {
+            // Convert the human-readable address to a machine-readable address
+            this.group_address = InetAddress.getByName(group_address_hr);
+
+            // Create a socket and join the multicast group
             this.socket = new MulticastSocket(local_port);
             this.socket.joinGroup(this.group_address);
+        } catch (UnknownHostException e) {
+            throw new MulticastException(e);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MulticastException(e);
         }
     }
 
@@ -63,22 +65,23 @@ public class MulticastManager {
      * Join the specified multicast group.
      * 
      * A local port will automatically chosen from available ports.
+     * @throws MulticastException 
      * 
      * @see MulticastManager#join(String, int)
      */
-    public void join(String group_address_hr) throws UnknownHostException {
+    public void join(String group_address_hr) throws MulticastException {
         this.join(group_address_hr, 0);
     }
 
     /**
      * Leave the multicast group that already joined.
+     * @throws MulticastException 
      */
-    public void leave() {
+    public void leave() throws MulticastException {
         try {
             this.socket.leaveGroup(this.group_address);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MulticastException(e);
         }
     }
 
@@ -90,15 +93,15 @@ public class MulticastManager {
      * @param remote_port
      *            Remote-side port number
      * @return Size of the data that I actually sent
+     * @throws MulticastException 
      */
-    public int sendData(byte[] data, int remote_port) {
+    public int sendData(byte[] data, int remote_port) throws MulticastException {
         DatagramPacket packet = new DatagramPacket(data, data.length,
                 this.group_address, remote_port);
         try {
             this.socket.send(packet);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new MulticastException(e);
         }
         return 0;
     }
