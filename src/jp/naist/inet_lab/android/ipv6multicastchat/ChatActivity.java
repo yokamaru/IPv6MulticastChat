@@ -1,8 +1,12 @@
 package jp.naist.inet_lab.android.ipv6multicastchat;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 import jp.naist.inet_lab.android.ipv6multicast.MulticastException;
 import jp.naist.inet_lab.android.ipv6multicast.MulticastManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
@@ -10,6 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ChatActivity extends Activity {
@@ -33,15 +38,27 @@ public class ChatActivity extends Activity {
      */
     protected MulticastManager multicastManager;
 
+    /**
+     * Thread to receive the message
+     */
+    protected Thread receiver;
+
+    protected Handler handler;
+
     protected Button buttonSend;
     protected EditText editMessage;
+    protected TextView textChatLog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        // Handler for touching GUI from inner thread
+        handler = new Handler();
+
         editMessage = (EditText) this.findViewById(R.id.editMessage);
+        textChatLog = (TextView) this.findViewById(R.id.textChatLog);
 
         buttonSend = (Button) this.findViewById(R.id.buttonSend);
         buttonSend.setOnClickListener(new OnClickListener() {
@@ -115,6 +132,29 @@ public class ChatActivity extends Activity {
             Toast.makeText(this, "Faild to send the group.", Toast.LENGTH_LONG)
                     .show();
         }
+    }
+
+    protected void startReceiveMessage() {
+        receiver = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (multicastManager.isJoin()) {
+                    final String msg = new String(
+                            // FIXME: Hard-coded buffer size 
+                            multicastManager.receiveData(1024), "UTF-8");
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            textChatLog.append("received> " + msg + "\n");
+                        }
+                    });
+                }
+            }
+
+        });
+        receiver.start();
     }
 
 }
