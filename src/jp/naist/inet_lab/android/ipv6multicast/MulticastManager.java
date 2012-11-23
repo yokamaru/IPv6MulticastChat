@@ -20,7 +20,7 @@ public class MulticastManager {
     /**
      * An address of the joined multicast group.
      */
-    InetAddress group_address;
+    InetAddress groupAddress;
 
     /**
      * A socket for communicating over the multicast.
@@ -30,14 +30,14 @@ public class MulticastManager {
     /**
      * A state of a MulticastLock on the WiFi interface
      */
-    protected WifiManager.MulticastLock multicast_lock;
+    protected WifiManager.MulticastLock multicastLock;
 
     /**
      * Join the specified multicast group.
      * 
-     * @param group_address_hr
+     * @param groupAddressByHumanReadable
      *            An address of the multicast group (Human-readable string)
-     * @param local_port
+     * @param localPort
      *            A port number which bind on the local. If specify 0 as a port
      *            number, it may automatically choose a port number from
      *            available ports.
@@ -45,15 +45,15 @@ public class MulticastManager {
      *             The specified group address is not found, or invalid format.
      * @throws MulticastException
      */
-    public void join(String group_address_hr, int local_port)
+    public void join(String groupAddressByHumanReadable, int localPort)
             throws MulticastException {
         try {
             // Convert the human-readable address to a machine-readable address
-            this.group_address = InetAddress.getByName(group_address_hr);
+            this.groupAddress = InetAddress.getByName(groupAddressByHumanReadable);
 
             // Create a socket and join the multicast group
-            this.socket = new MulticastSocket(local_port);
-            this.socket.joinGroup(this.group_address);
+            this.socket = new MulticastSocket(localPort);
+            this.socket.joinGroup(this.groupAddress);
         } catch (UnknownHostException e) {
             throw new MulticastException(e);
         } catch (IOException e) {
@@ -70,8 +70,8 @@ public class MulticastManager {
      * 
      * @see MulticastManager#join(String, int)
      */
-    public void join(String group_address_hr) throws MulticastException {
-        this.join(group_address_hr, 0);
+    public void join(String groupAddressByHumanReadable) throws MulticastException {
+        this.join(groupAddressByHumanReadable, 0);
     }
 
     /**
@@ -81,7 +81,7 @@ public class MulticastManager {
      */
     public void leave() throws MulticastException {
         try {
-            this.socket.leaveGroup(this.group_address);
+            this.socket.leaveGroup(this.groupAddress);
         } catch (IOException e) {
             throw new MulticastException(e);
         }
@@ -92,15 +92,15 @@ public class MulticastManager {
      * 
      * @param data
      *            Data that you want to send
-     * @param remote_port
+     * @param remotePort
      *            Remote-side port number
      * @return Size of the data that I actually sent
      * @throws MulticastException
      */
-    public int sendData(byte[] data, int remote_port) throws MulticastException {
+    public int sendData(byte[] data, int remotePort) throws MulticastException {
         // Build datagram packet
         DatagramPacket packet = new DatagramPacket(data, data.length,
-                this.group_address, remote_port);
+                this.groupAddress, remotePort);
 
         try {
             this.socket.send(packet);
@@ -113,13 +113,13 @@ public class MulticastManager {
     /**
      * Receive data from the joined multicast group.
      * 
-     * @param buffer_size
+     * @param bufferSize
      *            Maximum size by byte that I receive
      * @return Received data
      * @throws MulticastException
      */
-    public byte[] receiveData(int buffer_size) throws MulticastException {
-        byte[] buffer = new byte[buffer_size];
+    public byte[] receiveData(int bufferSize) throws MulticastException {
+        byte[] buffer = new byte[bufferSize];
 
         // Build packet and receive data into it
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -148,18 +148,18 @@ public class MulticastManager {
      *            internally.
      */
     public void enableMulticastOnWifi(Context context, String tag) {
-        WifiManager wifiman = (WifiManager) context
+        WifiManager wifiManager = (WifiManager) context
                 .getSystemService(android.content.Context.WIFI_SERVICE);
-        this.multicast_lock = wifiman.createMulticastLock(tag);
-        this.multicast_lock.setReferenceCounted(true);
-        this.multicast_lock.acquire();
+        this.multicastLock = wifiManager.createMulticastLock(tag);
+        this.multicastLock.setReferenceCounted(true);
+        this.multicastLock.acquire();
     }
 
     /**
      * Disable IP multicast on WiFi interface.
      */
     public void disableMulticastOnWifi() {
-        this.multicast_lock.release();
+        this.multicastLock.release();
     }
 
 }
