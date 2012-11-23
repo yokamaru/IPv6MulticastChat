@@ -1,6 +1,7 @@
 package jp.naist.inet_lab.android.ipv6multicast;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
@@ -86,9 +87,19 @@ public class MulticastManager {
      * 
      * @param data
      *            Data that you want to send
+     * @param remote_port
+     *            Remote-side port number
      * @return Size of the data that I actually sent
      */
-    public int sendData(byte[] data) {
+    public int sendData(byte[] data, int remote_port) {
+        DatagramPacket packet = new DatagramPacket(data, data.length,
+                this.group_address, remote_port);
+        try {
+            this.socket.send(packet);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return 0;
     }
 
