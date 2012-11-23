@@ -126,13 +126,23 @@ public class ChatActivity extends Activity {
      * Leave the multicast group
      */
     protected void leaveGroup() {
-        try {
-            multicastManager.leave();
-            multicastManager.disableMulticastOnWifi();
-        } catch (MulticastException e) {
-            Toast.makeText(this, "Faild to leave the group.", Toast.LENGTH_LONG)
-                    .show();
-        }
+        // Leave the multicast group, and then disable the mulricast on WiFi
+        // interface.
+        Thread leave = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    multicastManager.leave();
+                    multicastManager.disableMulticastOnWifi();
+                } catch (MulticastException e) {
+                    // When an error is occured, toast a message.
+                    Toast.makeText(getApplicationContext(),
+                            "Faild to leave the group.", Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+        });
+        leave.start();
     }
 
     /**
