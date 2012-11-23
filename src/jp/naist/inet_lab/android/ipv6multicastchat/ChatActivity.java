@@ -1,6 +1,5 @@
 package jp.naist.inet_lab.android.ipv6multicastchat;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import jp.naist.inet_lab.android.ipv6multicast.MulticastException;
@@ -97,6 +96,7 @@ public class ChatActivity extends Activity {
         multicastManager = new MulticastManager();
 
         try {
+            multicastManager.enableMulticastOnWifi(this, this.getString(R.string.app_name));
             multicastManager.join(this.groupAddress, this.PORT_NUMBER);
         } catch (MulticastException e) {
             Toast.makeText(this, "Faild to join the group.", Toast.LENGTH_LONG)
@@ -111,6 +111,7 @@ public class ChatActivity extends Activity {
     protected void leaveGroup() {
         try {
             multicastManager.leave();
+            multicastManager.disableMulticastOnWifi();
         } catch (MulticastException e) {
             Toast.makeText(this, "Faild to leave the group.", Toast.LENGTH_LONG)
                     .show();
