@@ -139,22 +139,30 @@ public class ChatActivity extends Activity {
 
             @Override
             public void run() {
-                while (multicastManager.isJoin()) {
-                    final String msg = new String(
-                            // FIXME: Hard-coded buffer size 
-                            multicastManager.receiveData(1024), "UTF-8");
+                while (multicastManager.isJoined()) {
+                    try {
+                        final String message = new String(
+                        // FIXME: Hard-coded buffer size
+                                multicastManager.receiveData(1024), "UTF-8");
 
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            textChatLog.append("received> " + msg + "\n");
-                        }
-                    });
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                textChatLog.append(message + "\n");
+                            }
+                        });
+                    } catch (UnsupportedEncodingException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (MulticastException e) {
+                        Toast.makeText(getApplicationContext(),
+                                "Faild to receive the message.", Toast.LENGTH_LONG)
+                                .show();
+                    }
                 }
             }
 
         });
         receiver.start();
     }
-
 }
