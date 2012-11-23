@@ -65,7 +65,8 @@ public class MulticastManager {
      * Join the specified multicast group.
      * 
      * A local port will automatically chosen from available ports.
-     * @throws MulticastException 
+     * 
+     * @throws MulticastException
      * 
      * @see MulticastManager#join(String, int)
      */
@@ -75,7 +76,8 @@ public class MulticastManager {
 
     /**
      * Leave the multicast group that already joined.
-     * @throws MulticastException 
+     * 
+     * @throws MulticastException
      */
     public void leave() throws MulticastException {
         try {
@@ -93,11 +95,13 @@ public class MulticastManager {
      * @param remote_port
      *            Remote-side port number
      * @return Size of the data that I actually sent
-     * @throws MulticastException 
+     * @throws MulticastException
      */
     public int sendData(byte[] data, int remote_port) throws MulticastException {
+        // Build datagram packet
         DatagramPacket packet = new DatagramPacket(data, data.length,
                 this.group_address, remote_port);
+
         try {
             this.socket.send(packet);
         } catch (IOException e) {
