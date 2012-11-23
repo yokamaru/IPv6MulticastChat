@@ -86,13 +86,25 @@ public class ChatActivity extends Activity {
                     .show();
             this.finish();
         }
+    }
 
+    /**
+     * Leave the multicast group
+     */
+    protected void leaveGroup() {
+        try {
+            multicastManager.leave();
+        } catch (MulticastException e) {
+            Toast.makeText(this, "Faild to leave the group.", Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     /**
      * Send the message to the joined multicast group
      * 
-     * @param message A message to be sent
+     * @param message
+     *            A message to be sent
      */
     protected void sendMessage(String message) {
 
