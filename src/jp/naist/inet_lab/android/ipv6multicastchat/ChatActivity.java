@@ -95,14 +95,31 @@ public class ChatActivity extends Activity {
     protected void joinGroup() {
         multicastManager = new MulticastManager();
 
-        try {
-            multicastManager.enableMulticastOnWifi(this, this.getString(R.string.app_name));
-            multicastManager.join(this.groupAddress, this.PORT_NUMBER);
-        } catch (MulticastException e) {
-            Toast.makeText(this, "Faild to join the group.", Toast.LENGTH_LONG)
-                    .show();
-            this.finish();
-        }
+        // Enable the multicast, and then join the multicast group.
+        Thread join = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                multicastManager.enableMulticastOnWifi(getApplicationContext(),
+                        getString(R.string.app_name));
+
+                try {
+                    multicastManager.join(groupAddress, PORT_NUMBER);
+                } catch (MulticastException e) {
+                    // When an error is occured, toast error and finish this
+                    // activity.
+                    Toast.makeText(getApplicationContext(),
+                            "Faild to join the group.", Toast.LENGTH_LONG)
+                            .show();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ChatActivity.this.finish();
+                        }
+                    });
+                }
+            }
+        });
+        join.start();
     }
 
     /**
@@ -142,8 +159,8 @@ public class ChatActivity extends Activity {
             public void run() {
                 while (multicastManager.isJoined()) {
                     try {
-                        final String message = new String(
                         // FIXME: Hard-coded buffer size
+                        final String message = new String(
                                 multicastManager.receiveData(1024), "UTF-8");
 
                         handler.post(new Runnable() {
@@ -157,8 +174,8 @@ public class ChatActivity extends Activity {
                         e.printStackTrace();
                     } catch (MulticastException e) {
                         Toast.makeText(getApplicationContext(),
-                                "Faild to receive the message.", Toast.LENGTH_LONG)
-                                .show();
+                                "Faild to receive the message.",
+                                Toast.LENGTH_LONG).show();
                     }
                 }
             }
