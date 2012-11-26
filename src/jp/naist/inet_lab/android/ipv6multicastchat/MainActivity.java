@@ -14,6 +14,7 @@ public class MainActivity extends Activity {
     private Button buttonJoin;
     private EditText editName;
     private EditText editGroupAddress;
+    private EditText editPortNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,9 @@ public class MainActivity extends Activity {
         // A form for input the multicast group address
         this.editGroupAddress = (EditText) this
                 .findViewById(R.id.editGroupAddress);
+
+        // A form for input the port number
+        this.editPortNumber = (EditText) this.findViewById(R.id.editPortNumber);
 
         // A button for join the multicast group
         this.buttonJoin = (Button) this.findViewById(R.id.buttonJoin);
@@ -40,12 +44,15 @@ public class MainActivity extends Activity {
                 // valid)
                 String name = editName.getText().toString();
                 String groupAddress = editGroupAddress.getText().toString();
+                int portNumber = Integer.parseInt(editPortNumber.getText()
+                        .toString());
 
                 // Start the ChatAcrivity
                 Intent intentToChatActivity = new Intent(
                         getApplicationContext(), ChatActivity.class);
                 intentToChatActivity.putExtra("name", name);
                 intentToChatActivity.putExtra("group_address", groupAddress);
+                intentToChatActivity.putExtra("port_number", portNumber);
                 startActivity(intentToChatActivity);
             }
 
