@@ -71,6 +71,7 @@ public class ChatActivity extends Activity {
                 if (!message.isEmpty()) {
                     message = name + " > " + message;
                     sendMessage(message);
+                    editMessage.setText("");
                 }
             }
 
