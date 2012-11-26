@@ -12,5 +12,10 @@
     <string name="main_edit_group_address">ff12::1234</string>
     <string name="main_text_port_number">Port number:</string>
     <string name="main_edit_port_number">54321</string>
+    <string name="alert_leave_failed">Faild to leave the group.</string>
+    <string name="alert_join_failed">Faild to join the group.</string>
+    <string name="alert_send_failed">Faild to send the message.</string>
+    <string name="alert_decode_failed">Faild to decode the message.</string>
+    <string name="alert_receive_failed">Faild to receive the message.</string>
 
 </resources>

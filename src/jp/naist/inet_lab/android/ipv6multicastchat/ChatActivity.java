@@ -141,7 +141,7 @@ public class ChatActivity extends Activity {
                 } catch (MulticastException e) {
                     // When an error is occured, toast error and finish this
                     // activity.
-                    showToastFromThread("Faild to join the group.",
+                    showToastFromThread(getString(R.string.alert_join_failed),
                             Toast.LENGTH_LONG);
                     handler.post(new Runnable() {
                         @Override
@@ -169,7 +169,7 @@ public class ChatActivity extends Activity {
                     multicastManager.disableMulticastOnWifi();
                 } catch (MulticastException e) {
                     // When an error is occured, toast a message.
-                    showToastFromThread("Faild to leave the group.",
+                    showToastFromThread(getString(R.string.alert_leave_failed),
                             Toast.LENGTH_LONG);
                 }
             }
@@ -190,7 +190,7 @@ public class ChatActivity extends Activity {
                 try {
                     multicastManager.sendData(message.getBytes(), portNumber);
                 } catch (MulticastException e) {
-                    showToastFromThread("Faild to send the message.",
+                    showToastFromThread(getString(R.string.alert_send_failed),
                             Toast.LENGTH_LONG);
                 }
             }
@@ -210,10 +210,10 @@ public class ChatActivity extends Activity {
                                 multicastManager.receiveData(1024), "UTF-8");
                         appendChatLog(message);
                     } catch (UnsupportedEncodingException e) {
-                        showToastFromThread("Faild to decode the message.",
+                        showToastFromThread(getString(R.string.alert_decode_failed),
                                 Toast.LENGTH_LONG);
                     } catch (MulticastException e) {
-                        showToastFromThread("Faild to receive the message.",
+                        showToastFromThread(getString(R.string.alert_receive_failed),
                                 Toast.LENGTH_LONG);
                     }
                 }
