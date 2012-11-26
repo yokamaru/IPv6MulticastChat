@@ -108,6 +108,7 @@ public class ChatActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menuLeave:
+                // Leave the group expressly
                 this.leaveGroup();
                 handler.post(new Runnable() {
                     @Override
