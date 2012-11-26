@@ -95,7 +95,12 @@ public class ChatActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        this.leaveGroup();
+        // If the user expressly leave the group, it is unnecessary to leave the
+        // group. So we should confirm that the application currently joined or
+        // not.
+        if (this.multicastManager.isJoined()) {
+            this.leaveGroup();
+        }
     }
 
     @Override
