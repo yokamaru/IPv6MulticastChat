@@ -95,7 +95,12 @@ public class ChatActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        this.leaveGroup();
+        // If the user expressly leave the group, it is unnecessary to leave the
+        // group. So we should confirm that the application currently joined or
+        // not.
+        if (this.multicastManager.isJoined()) {
+            this.leaveGroup();
+        }
     }
 
     @Override
@@ -108,6 +113,7 @@ public class ChatActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menuLeave:
+                // Leave the group expressly
                 this.leaveGroup();
                 handler.post(new Runnable() {
                     @Override
@@ -118,14 +124,6 @@ public class ChatActivity extends Activity {
         }
 
         return true;
-    }
-
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            this.leaveGroup();
-        }
-
-        return super.onKeyDown(keyCode, event);
     }
 
     /**
