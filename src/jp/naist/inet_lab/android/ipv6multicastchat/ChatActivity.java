@@ -126,14 +126,6 @@ public class ChatActivity extends Activity {
         return true;
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            this.leaveGroup();
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }
-
     /**
      * Join the multicast group
      */
