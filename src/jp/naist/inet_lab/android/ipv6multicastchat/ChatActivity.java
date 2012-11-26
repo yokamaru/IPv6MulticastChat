@@ -198,4 +198,13 @@ public class ChatActivity extends Activity {
         });
         receiver.start();
     }
+
+    /**
+     * Append specified message to the chat log area
+     * 
+     * @param message
+     */
+    protected void appendChatLog(String message) {
+        textChatLog.append(message + "\n");
+    }
 }
