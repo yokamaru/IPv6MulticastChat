@@ -80,9 +80,17 @@ public class ChatActivity extends Activity {
         if (intent != null) {
             this.name = intent.getStringExtra("name");
             this.groupAddress = intent.getStringExtra("group_address");
-
-            this.joinGroup();
         }
+
+        multicastManager = new MulticastManager();
+    }
+
+    protected void onResume() {
+        this.joinGroup();
+    }
+
+    protected void onPause() {
+        this.leaveGroup();
     }
 
     @Override
@@ -119,8 +127,6 @@ public class ChatActivity extends Activity {
      * Join the multicast group
      */
     protected void joinGroup() {
-        multicastManager = new MulticastManager();
-
         // Enable the multicast, and then join the multicast group.
         Thread join = new Thread(new Runnable() {
             @Override
