@@ -86,10 +86,14 @@ public class ChatActivity extends Activity {
     }
 
     protected void onResume() {
+        super.onResume();
+
         this.joinGroup();
     }
 
     protected void onPause() {
+        super.onPause();
+
         this.leaveGroup();
     }
 
