@@ -25,8 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="jp.naist.inet_lab.android.ipv6multicastchat.ChatActivity"
-            android:label="@string/title_activity_chat" >
+            android:name="jp.naist.inet_lab.android.ipv6multicastchat.ChatActivity">
         </activity>
     </application>
 

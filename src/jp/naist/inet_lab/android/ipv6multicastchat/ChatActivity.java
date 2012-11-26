@@ -21,12 +21,6 @@ import android.widget.Toast;
 public class ChatActivity extends Activity {
 
     /**
-     * Port number which bind to/send to
-     */
-    // FIXME: hard-coded port number
-    protected int PORT_NUMBER = 32100;
-
-    /**
      * A handle-name
      */
     protected String name;
@@ -34,6 +28,10 @@ public class ChatActivity extends Activity {
      * An address of multicast group
      */
     protected String groupAddress;
+    /**
+     * A port number which bind to/send to
+     */
+    protected int portNumber;
 
     /**
      * Manage communication over multicast
@@ -71,6 +69,7 @@ public class ChatActivity extends Activity {
                 if (!message.isEmpty()) {
                     message = name + " > " + message;
                     sendMessage(message);
+                    editMessage.setText("");
                 }
             }
 
@@ -80,6 +79,7 @@ public class ChatActivity extends Activity {
         if (intent != null) {
             this.name = intent.getStringExtra("name");
             this.groupAddress = intent.getStringExtra("group_address");
+            this.portNumber = intent.getIntExtra("port_number", 54321);
         }
 
         multicastManager = new MulticastManager();
@@ -140,7 +140,7 @@ public class ChatActivity extends Activity {
                         getString(R.string.app_name));
 
                 try {
-                    multicastManager.join(groupAddress, PORT_NUMBER);
+                    multicastManager.join(groupAddress, portNumber);
                 } catch (MulticastException e) {
                     // When an error is occured, toast error and finish this
                     // activity.
@@ -191,7 +191,7 @@ public class ChatActivity extends Activity {
             @Override
             public void run() {
                 try {
-                    multicastManager.sendData(message.getBytes(), PORT_NUMBER);
+                    multicastManager.sendData(message.getBytes(), portNumber);
                 } catch (MulticastException e) {
                     showToastFromThread("Faild to send the message.",
                             Toast.LENGTH_LONG);
