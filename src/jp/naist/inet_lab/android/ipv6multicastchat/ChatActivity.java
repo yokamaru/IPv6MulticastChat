@@ -1,7 +1,6 @@
 package jp.naist.inet_lab.android.ipv6multicastchat;
 
 import java.io.UnsupportedEncodingException;
-
 import jp.naist.inet_lab.android.ipv6multicast.MulticastException;
 import jp.naist.inet_lab.android.ipv6multicast.MulticastManager;
 import android.os.Bundle;
@@ -18,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ChatActivity extends Activity {
-
     /**
      * A handle-name
      */
@@ -61,7 +59,6 @@ public class ChatActivity extends Activity {
 
         buttonSend = (Button) this.findViewById(R.id.buttonSend);
         buttonSend.setOnClickListener(new OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 String message = editMessage.getText().toString();
@@ -71,7 +68,6 @@ public class ChatActivity extends Activity {
                     editMessage.setText("");
                 }
             }
-
         });
 
         Intent intent = getIntent();
@@ -210,15 +206,16 @@ public class ChatActivity extends Activity {
                                 multicastManager.receiveData(1024), "UTF-8");
                         appendChatLog(message);
                     } catch (UnsupportedEncodingException e) {
-                        showToastFromThread(getString(R.string.alert_decode_failed),
+                        showToastFromThread(
+                                getString(R.string.alert_decode_failed),
                                 Toast.LENGTH_LONG);
                     } catch (MulticastException e) {
-                        showToastFromThread(getString(R.string.alert_receive_failed),
+                        showToastFromThread(
+                                getString(R.string.alert_receive_failed),
                                 Toast.LENGTH_LONG);
                     }
                 }
             }
-
         });
         receiver.start();
     }
