@@ -89,6 +89,7 @@ public class ChatActivity extends Activity {
         super.onResume();
 
         this.joinGroup();
+        this.startReceiveMessage();
     }
 
     protected void onPause() {
