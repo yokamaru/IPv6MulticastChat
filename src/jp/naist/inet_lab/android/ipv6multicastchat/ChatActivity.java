@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
 import android.content.Intent;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -104,6 +105,14 @@ public class ChatActivity extends Activity {
         }
 
         return true;
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            this.leaveGroup();
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
