@@ -192,7 +192,6 @@ public class ChatActivity extends Activity {
             public void run() {
                 try {
                     multicastManager.sendData(message.getBytes(), PORT_NUMBER);
-                    appendChatLog(message);
                 } catch (MulticastException e) {
                     showToastFromThread("Faild to send the message.",
                             Toast.LENGTH_LONG);
