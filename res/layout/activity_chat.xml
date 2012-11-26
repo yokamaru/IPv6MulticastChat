@@ -16,6 +16,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/chat_edit_message"
+            android:inputType="text"
             android:maxLines="1" >
 
             <requestFocus />
