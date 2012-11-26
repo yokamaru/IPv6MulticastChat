@@ -20,7 +20,8 @@
             android:id="@+id/editName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="text" >
+            android:inputType="text"
+            android:maxLines="1" >
 
             <requestFocus />
         </EditText>
@@ -41,7 +42,9 @@
             android:id="@+id/editGroupAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="text" />
+            android:inputType="text"
+            android:maxLines="1" />
+
     </TableRow>
 
     <Button
