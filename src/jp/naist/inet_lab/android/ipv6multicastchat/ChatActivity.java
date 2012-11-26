@@ -107,12 +107,12 @@ public class ChatActivity extends Activity {
                 } catch (MulticastException e) {
                     // When an error is occured, toast error and finish this
                     // activity.
-                    Toast.makeText(getApplicationContext(),
-                            "Faild to join the group.", Toast.LENGTH_LONG)
-                            .show();
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Faild to join the group.",
+                                    Toast.LENGTH_LONG).show();
                             ChatActivity.this.finish();
                         }
                     });
