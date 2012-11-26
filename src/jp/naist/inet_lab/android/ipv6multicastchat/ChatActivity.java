@@ -178,8 +178,8 @@ public class ChatActivity extends Activity {
                                 multicastManager.receiveData(1024), "UTF-8");
                         appendChatLog(message);
                     } catch (UnsupportedEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        showToastFromThread("Faild to decode the message.",
+                                Toast.LENGTH_LONG);
                     } catch (MulticastException e) {
                         showToastFromThread("Faild to receive the message.",
                                 Toast.LENGTH_LONG);
