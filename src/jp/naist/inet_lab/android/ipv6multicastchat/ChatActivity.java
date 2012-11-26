@@ -21,6 +21,7 @@ public class ChatActivity extends Activity {
     /**
      * Port number which bind to/send to
      */
+    // FIXME: hard-coded port number
     protected int PORT_NUMBER = 32100;
 
     /**
@@ -107,12 +108,11 @@ public class ChatActivity extends Activity {
                 } catch (MulticastException e) {
                     // When an error is occured, toast error and finish this
                     // activity.
+                    showToastFromThread("Faild to join the group.",
+                            Toast.LENGTH_LONG);
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(),
-                                    "Faild to join the group.",
-                                    Toast.LENGTH_LONG).show();
                             ChatActivity.this.finish();
                         }
                     });
@@ -136,9 +136,8 @@ public class ChatActivity extends Activity {
                     multicastManager.disableMulticastOnWifi();
                 } catch (MulticastException e) {
                     // When an error is occured, toast a message.
-                    Toast.makeText(getApplicationContext(),
-                            "Faild to leave the group.", Toast.LENGTH_LONG)
-                            .show();
+                    showToastFromThread("Faild to leave the group.",
+                            Toast.LENGTH_LONG);
                 }
             }
         });
@@ -157,10 +156,10 @@ public class ChatActivity extends Activity {
             public void run() {
                 try {
                     multicastManager.sendData(message.getBytes(), PORT_NUMBER);
+                    appendChatLog(message);
                 } catch (MulticastException e) {
-                    Toast.makeText(getApplicationContext(),
-                            "Faild to send the group.", Toast.LENGTH_LONG)
-                            .show();
+                    showToastFromThread("Faild to send the message.",
+                            Toast.LENGTH_LONG);
                 }
             }
         });
@@ -177,20 +176,13 @@ public class ChatActivity extends Activity {
                         // FIXME: Hard-coded buffer size
                         final String message = new String(
                                 multicastManager.receiveData(1024), "UTF-8");
-
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                textChatLog.append(message + "\n");
-                            }
-                        });
+                        appendChatLog(message);
                     } catch (UnsupportedEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     } catch (MulticastException e) {
-                        Toast.makeText(getApplicationContext(),
-                                "Faild to receive the message.",
-                                Toast.LENGTH_LONG).show();
+                        showToastFromThread("Faild to receive the message.",
+                                Toast.LENGTH_LONG);
                     }
                 }
             }
@@ -204,7 +196,27 @@ public class ChatActivity extends Activity {
      * 
      * @param message
      */
-    protected void appendChatLog(String message) {
-        textChatLog.append(message + "\n");
+    protected void appendChatLog(final String message) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                textChatLog.append(message + "\n");
+            }
+        });
+    }
+
+    /**
+     * Show toast message from outside of the UI thread
+     * 
+     * @param text
+     * @param duration
+     */
+    protected void showToastFromThread(final String text, final int duration) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), text, duration).show();
+            }
+        });
     }
 }
