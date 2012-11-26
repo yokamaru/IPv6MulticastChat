@@ -11,5 +11,7 @@
     <string name="chat_button_send">Send</string>
     <string name="chat_edit_message">Message</string>
     <string name="chat_menu_leave">Leave</string>
+    <string name="main_edit_name">Bob</string>
+    <string name="main_edit_group_address">ff13::1234</string>
 
 </resources>

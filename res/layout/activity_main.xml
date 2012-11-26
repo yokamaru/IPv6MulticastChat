@@ -20,6 +20,7 @@
             android:id="@+id/editName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:hint="@string/main_edit_name"
             android:inputType="text"
             android:maxLines="1" >
 
@@ -42,6 +43,7 @@
             android:id="@+id/editGroupAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:hint="@string/main_edit_group_address"
             android:inputType="text"
             android:maxLines="1" />
 
