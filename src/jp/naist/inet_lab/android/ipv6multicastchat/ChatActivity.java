@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -87,6 +88,21 @@ public class ChatActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_chat, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menuLeave:
+                this.leaveGroup();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ChatActivity.this.finish();
+                    }
+                });
+        }
+
         return true;
     }
 
