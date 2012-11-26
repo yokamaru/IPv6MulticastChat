@@ -134,6 +134,8 @@ public class ChatActivity extends Activity {
 
                 try {
                     multicastManager.join(groupAddress, portNumber);
+                    showToastFromThread(getString(R.string.alert_join_success)
+                            + " " + groupAddress, Toast.LENGTH_SHORT);
                 } catch (MulticastException e) {
                     // When an error is occured, toast error and finish this
                     // activity.
@@ -163,6 +165,8 @@ public class ChatActivity extends Activity {
                 try {
                     multicastManager.leave();
                     multicastManager.disableMulticastOnWifi();
+                    showToastFromThread(getString(R.string.alert_leave_success)
+                            + " " + groupAddress, Toast.LENGTH_SHORT);
                 } catch (MulticastException e) {
                     // When an error is occured, toast a message.
                     showToastFromThread(getString(R.string.alert_leave_failed),
