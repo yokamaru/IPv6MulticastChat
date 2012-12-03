@@ -53,7 +53,9 @@ public class MulticastManager {
         try {
             // Create a socket and join the multicast group
             this.socket = new MulticastSocket(localPort);
-            this.socket.joinGroup(this.groupAddress);
+            this.socket.joinGroup(groupAddress);
+
+            this.groupAddress = groupAddress;
 
             this.joined = true;
         } catch (IOException e) {
