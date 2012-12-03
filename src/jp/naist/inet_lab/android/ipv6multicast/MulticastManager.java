@@ -26,7 +26,7 @@ public class MulticastManager {
      * A socket for communicating over the multicast.
      */
     MulticastSocket socket;
-    
+
     /**
      * Is joining a multicast group or not
      */
@@ -40,31 +40,47 @@ public class MulticastManager {
     /**
      * Join the specified multicast group.
      * 
+     * @param groupAddress
+     *            An address of the multicast group
+     * @param localPort
+     *            A port number which bind on the local. If specify 0 as a port
+     *            number, it may automatically choose a port number from
+     *            available ports.
+     * @throws MulticastException
+     */
+    public void join(InetAddress groupAddress, int localPort)
+            throws MulticastException {
+        try {
+            // Create a socket and join the multicast group
+            this.socket = new MulticastSocket(localPort);
+            this.socket.joinGroup(this.groupAddress);
+
+            this.joined = true;
+        } catch (IOException e) {
+            throw new MulticastException(e);
+        }
+    }
+
+    /**
+     * Join the specified multicast group.
+     * 
      * @param groupAddressByHumanReadable
      *            An address of the multicast group (Human-readable string)
      * @param localPort
      *            A port number which bind on the local. If specify 0 as a port
      *            number, it may automatically choose a port number from
      *            available ports.
-     * @throws UnknownHostException
-     *             The specified group address is not found, or invalid format.
      * @throws MulticastException
      */
     public void join(String groupAddressByHumanReadable, int localPort)
             throws MulticastException {
         try {
             // Convert the human-readable address to a machine-readable address
-            this.groupAddress = InetAddress
+            InetAddress groupAddress = InetAddress
                     .getByName(groupAddressByHumanReadable);
 
-            // Create a socket and join the multicast group
-            this.socket = new MulticastSocket(localPort);
-            this.socket.joinGroup(this.groupAddress);
-            
-            this.joined = true;
+            this.join(groupAddress, localPort);
         } catch (UnknownHostException e) {
-            throw new MulticastException(e);
-        } catch (IOException e) {
             throw new MulticastException(e);
         }
     }
@@ -91,7 +107,7 @@ public class MulticastManager {
     public void leave() throws MulticastException {
         try {
             this.socket.leaveGroup(this.groupAddress);
-            
+
             this.joined = false;
         } catch (IOException e) {
             throw new MulticastException(e);
