@@ -2,12 +2,19 @@ package jp.naist.inet_lab.android.ipv6multicast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
 /**
  * Manage communicating over the IP multicast.
@@ -148,12 +155,38 @@ public class MulticastManager {
      * @throws MulticastException
      */
     public byte[] receiveData(int bufferSize) throws MulticastException {
+        return receiveData(bufferSize, false);
+    }
+
+    /**
+     * Receive data from the joined multicast group.
+     * 
+     * @param bufferSize
+     * @param ignoreOwnSentPacket
+     *            True then ignore the packet which sent by this node
+     * @return
+     * @throws MulticastException
+     */
+    public byte[] receiveData(int bufferSize, boolean ignoreOwnSentPacket)
+            throws MulticastException {
         byte[] buffer = new byte[bufferSize];
 
         // Build packet and receive data into it
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         try {
-            this.socket.receive(packet);
+            while (true) {
+                this.socket.receive(packet);
+
+                InetAddress sourceAddress = packet.getAddress();
+
+                if ((ignoreOwnSentPacket)
+                        && (getAllLocalIPv6Addresses().contains(sourceAddress))) {
+                    Log.d("MulticastManager", "Ignore the packet which I sent.");
+                    continue;
+                } else {
+                    break;
+                }
+            }
         } catch (IOException e) {
             throw new MulticastException(e);
         }
@@ -200,4 +233,36 @@ public class MulticastManager {
         return this.joined;
     }
 
+    /**
+     * Get all IPv6 addresses which assigned to local interfaces.
+     * 
+     * @return List of IPv6 address which assigned
+     */
+    private List<InetAddress> getAllLocalIPv6Addresses() {
+        List<InetAddress> v6Addresses = new ArrayList<InetAddress>();
+
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface
+                    .getNetworkInterfaces();
+
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface network = interfaces.nextElement();
+                Enumeration<InetAddress> addresses = network.getInetAddresses();
+
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+
+                    if ((address.getClass().equals(Inet6Address.class))
+                            && (!address.isMulticastAddress())) {
+                        v6Addresses.add(address);
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return v6Addresses;
+    }
 }
