@@ -169,15 +169,21 @@ public class MulticastManager {
      */
     public byte[] receiveData(int bufferSize, boolean ignoreOwnSentPacket)
             throws MulticastException {
+        return receiveDataWithDetail(bufferSize, ignoreOwnSentPacket).buffer;
+    }
+
+    public ReceivedData receiveDataWithDetail(int bufferSize,
+            boolean ignoreOwnSentPacket) throws MulticastException {
         byte[] buffer = new byte[bufferSize];
 
         // Build packet and receive data into it
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        InetAddress sourceAddress;
         try {
             while (true) {
                 this.socket.receive(packet);
 
-                InetAddress sourceAddress = packet.getAddress();
+                sourceAddress = packet.getAddress();
 
                 if ((ignoreOwnSentPacket)
                         && (getAllLocalIPv6Addresses().contains(sourceAddress))) {
@@ -191,7 +197,21 @@ public class MulticastManager {
             throw new MulticastException(e);
         }
 
-        return buffer;
+        ReceivedData receivedData = new ReceivedData();
+        receivedData.buffer = buffer;
+        receivedData.sourceAddress = sourceAddress;
+        receivedData.sourcePort = packet.getPort();
+
+        return receivedData;
+    }
+
+    /**
+     * Contain received data, include source address and port.
+     */
+    public class ReceivedData {
+        public byte[] buffer;
+        public InetAddress sourceAddress;
+        public int sourcePort;
     }
 
     /**
