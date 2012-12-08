@@ -257,30 +257,26 @@ public class MulticastManager {
      * Get all IPv6 addresses which assigned to local interfaces.
      * 
      * @return List of IPv6 address which assigned
+     * @throws SocketException
      */
-    private List<InetAddress> getAllLocalIPv6Addresses() {
+    private List<InetAddress> getAllLocalIPv6Addresses() throws SocketException {
         List<InetAddress> v6Addresses = new ArrayList<InetAddress>();
 
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface
-                    .getNetworkInterfaces();
+        Enumeration<NetworkInterface> interfaces = NetworkInterface
+                .getNetworkInterfaces();
 
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface network = interfaces.nextElement();
-                Enumeration<InetAddress> addresses = network.getInetAddresses();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface network = interfaces.nextElement();
+            Enumeration<InetAddress> addresses = network.getInetAddresses();
 
-                while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
+            while (addresses.hasMoreElements()) {
+                InetAddress address = addresses.nextElement();
 
-                    if ((address.getClass().equals(Inet6Address.class))
-                            && (!address.isMulticastAddress())) {
-                        v6Addresses.add(address);
-                    }
+                if ((address.getClass().equals(Inet6Address.class))
+                        && (!address.isMulticastAddress())) {
+                    v6Addresses.add(address);
                 }
             }
-        } catch (SocketException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         return v6Addresses;
