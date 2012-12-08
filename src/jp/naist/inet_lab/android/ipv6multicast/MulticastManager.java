@@ -311,7 +311,8 @@ public class MulticastManager {
 
                         /* Format received packet into ReceivedData */
                         ReceivedData receivedData = new ReceivedData();
-                        receivedData.buffer = buffer;
+                        receivedData.buffer = packet.getData();
+                        receivedData.length = packet.getLength();
                         receivedData.sourceAddress = packet.getAddress();
                         receivedData.sourcePort = packet.getPort();
                         receivedData.groupAddress = socket.getInetAddress();
@@ -339,6 +340,8 @@ public class MulticastManager {
     public class ReceivedData {
         /** Bytes of data which received. */
         public byte[] buffer;
+        /** Size of the received data by bytes */
+        public int length;
         /** Source address (which means remote address) */
         public InetAddress sourceAddress;
         /** Group address */
