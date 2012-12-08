@@ -1,8 +1,12 @@
 package jp.naist.inet_lab.android.ipv6multicastchat;
 
-import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+
 import jp.naist.inet_lab.android.ipv6multicast.MulticastException;
 import jp.naist.inet_lab.android.ipv6multicast.MulticastManager;
+import jp.naist.inet_lab.android.ipv6multicast.MulticastManager.ReceivedData;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
@@ -125,32 +129,22 @@ public class ChatActivity extends Activity {
      * Join the multicast group
      */
     protected void joinGroup() {
-        // Enable the multicast, and then join the multicast group.
-        Thread join = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                multicastManager.enableMulticastOnWifi(getApplicationContext(),
-                        getString(R.string.app_name));
-
-                try {
-                    multicastManager.join(groupAddress, portNumber);
-                    showToastFromThread(getString(R.string.alert_join_success)
-                            + " " + groupAddress, Toast.LENGTH_SHORT);
-                } catch (MulticastException e) {
-                    // When an error is occured, toast error and finish this
-                    // activity.
-                    showToastFromThread(getString(R.string.alert_join_failed),
-                            Toast.LENGTH_LONG);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            ChatActivity.this.finish();
-                        }
-                    });
+        multicastManager.enableMulticastOnWifi(getApplicationContext(),
+                getString(R.string.app_name));
+        try {
+            multicastManager.join(groupAddress, portNumber);
+            showToastFromThread(getString(R.string.alert_join_success) + " "
+                    + groupAddress, Toast.LENGTH_SHORT);
+        } catch (MulticastException e) {
+            showToastFromThread(getString(R.string.alert_join_failed),
+                    Toast.LENGTH_LONG);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ChatActivity.this.finish();
                 }
-            }
-        });
-        join.start();
+            });
+        }
     }
 
     /**
@@ -159,22 +153,16 @@ public class ChatActivity extends Activity {
     protected void leaveGroup() {
         // Leave the multicast group, and then disable the mulricast on WiFi
         // interface.
-        Thread leave = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    multicastManager.leave();
-                    multicastManager.disableMulticastOnWifi();
-                    showToastFromThread(getString(R.string.alert_leave_success)
-                            + " " + groupAddress, Toast.LENGTH_SHORT);
-                } catch (MulticastException e) {
-                    // When an error is occured, toast a message.
-                    showToastFromThread(getString(R.string.alert_leave_failed),
-                            Toast.LENGTH_LONG);
-                }
-            }
-        });
-        leave.start();
+        try {
+            multicastManager.leave();
+            multicastManager.disableMulticastOnWifi();
+            showToastFromThread(getString(R.string.alert_leave_success) + " "
+                    + groupAddress, Toast.LENGTH_SHORT);
+        } catch (MulticastException e) {
+            // When an error is occured, toast a message.
+            showToastFromThread(getString(R.string.alert_leave_failed),
+                    Toast.LENGTH_LONG);
+        }
     }
 
     /**
@@ -199,29 +187,27 @@ public class ChatActivity extends Activity {
     }
 
     protected void startReceiveMessage() {
-        receiver = new Thread(new Runnable() {
+        InetAddress groupAddressAsInetAddr = null;
 
-            @Override
-            public void run() {
-                while (multicastManager.isJoined()) {
-                    try {
-                        // FIXME: Hard-coded buffer size
-                        final String message = new String(
-                                multicastManager.receiveData(1024), "UTF-8");
-                        appendChatLog(message);
-                    } catch (UnsupportedEncodingException e) {
-                        showToastFromThread(
-                                getString(R.string.alert_decode_failed),
-                                Toast.LENGTH_LONG);
-                    } catch (MulticastException e) {
-                        showToastFromThread(
-                                getString(R.string.alert_receive_failed),
-                                Toast.LENGTH_LONG);
-                    }
-                }
-            }
-        });
-        receiver.start();
+        try {
+            groupAddressAsInetAddr = InetAddress.getByName(this.groupAddress);
+
+            multicastManager.startReceiver(groupAddressAsInetAddr, 1024, false,
+                    new MulticastManager.Receiver() {
+                        @Override
+                        public void run(ReceivedData receivedData) {
+                            String message = new String(receivedData.buffer,
+                                    Charset.forName("UTF-8"));
+                            appendChatLog(message);
+                        }
+                    });
+        } catch (UnknownHostException e) {
+            showToastFromThread(getString(R.string.alert_join_failed),
+                    Toast.LENGTH_LONG);
+        } catch (MulticastException e) {
+            showToastFromThread(getString(R.string.alert_join_failed),
+                    Toast.LENGTH_LONG);
+        }
     }
 
     /**

@@ -10,7 +10,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
@@ -23,26 +25,25 @@ import android.util.Log;
  * 
  */
 public class MulticastManager {
-
     /**
-     * An address of the joined multicast group.
+     * Keep tracks of all multicast sockets
      */
-    InetAddress groupAddress;
-
-    /**
-     * A socket for communicating over the multicast.
-     */
-    MulticastSocket socket;
-
-    /**
-     * Is joining a multicast group or not
-     */
-    boolean joined = false;
+    HashMap<InetAddress, MulticastSocket> sockets;
 
     /**
      * A state of a MulticastLock on the WiFi interface
      */
     protected WifiManager.MulticastLock multicastLock;
+
+    /**
+     * An address of the joined multicast group. This is for the compatibility
+     * with api4 or earlier.
+     */
+    InetAddress latestGroupAddress;
+
+    public MulticastManager() {
+        sockets = new HashMap<InetAddress, MulticastSocket>();
+    }
 
     /**
      * Join the specified multicast group.
@@ -57,14 +58,24 @@ public class MulticastManager {
      */
     public void join(InetAddress groupAddress, int localPort)
             throws MulticastException {
+        /* Do nothing if already joined. */
+        if (sockets.containsKey(groupAddress)) {
+            return;
+        }
+
+        MulticastSocket socket;
         try {
             // Create a socket and join the multicast group
-            this.socket = new MulticastSocket(localPort);
-            this.socket.joinGroup(groupAddress);
+            socket = new MulticastSocket(localPort);
+            socket.joinGroup(groupAddress);
 
-            this.groupAddress = groupAddress;
+            sockets.put(groupAddress, socket);
 
-            this.joined = true;
+            /*
+             * For compatibility with api4 and earlier, keep track the group
+             * address which most recently joined.
+             */
+            this.latestGroupAddress = groupAddress;
         } catch (IOException e) {
             throw new MulticastException(e);
         }
@@ -109,15 +120,39 @@ public class MulticastManager {
     }
 
     /**
-     * Leave the multicast group that already joined.
+     * Leave the all multicast group that already joined.
      * 
      * @throws MulticastException
      */
     public void leave() throws MulticastException {
         try {
-            this.socket.leaveGroup(this.groupAddress);
+            for (Map.Entry<InetAddress, MulticastSocket> entry : sockets
+                    .entrySet()) {
+                InetAddress groupAddress = entry.getKey();
+                MulticastSocket socket = entry.getValue();
 
-            this.joined = false;
+                socket.leaveGroup(groupAddress);
+
+                sockets.remove(groupAddress);
+            }
+        } catch (IOException e) {
+            throw new MulticastException(e);
+        }
+    }
+
+    /**
+     * Leave the multicast group.
+     * 
+     * @param groupAddress
+     * @throws MulticastException
+     */
+    public void leave(InetAddress groupAddress) throws MulticastException {
+        MulticastSocket socket = sockets.get(groupAddress);
+
+        try {
+            socket.leaveGroup(groupAddress);
+
+            sockets.remove(groupAddress);
         } catch (IOException e) {
             throw new MulticastException(e);
         }
@@ -134,15 +169,22 @@ public class MulticastManager {
      * @throws MulticastException
      */
     public int sendData(byte[] data, int remotePort) throws MulticastException {
-        // Build datagram packet
-        DatagramPacket packet = new DatagramPacket(data, data.length,
-                this.groupAddress, remotePort);
-
         try {
-            this.socket.send(packet);
+            for (Map.Entry<InetAddress, MulticastSocket> entry : sockets
+                    .entrySet()) {
+                InetAddress groupAddress = entry.getKey();
+                MulticastSocket socket = entry.getValue();
+
+                /* Build a datagram packet and send it */
+                DatagramPacket packet = new DatagramPacket(data, data.length,
+                        groupAddress, remotePort);
+
+                socket.send(packet);
+            }
         } catch (IOException e) {
             throw new MulticastException(e);
         }
+
         return 0;
     }
 
@@ -153,6 +195,9 @@ public class MulticastManager {
      *            Maximum size by byte that I receive
      * @return Received data
      * @throws MulticastException
+     * @deprecated Use
+     *             {@link #startReceiver(InetAddress, int, boolean, Receiver)}
+     *             instead.
      */
     public byte[] receiveData(int bufferSize) throws MulticastException {
         return receiveData(bufferSize, false);
@@ -166,22 +211,38 @@ public class MulticastManager {
      *            True then ignore the packet which sent by this node
      * @return
      * @throws MulticastException
+     * @deprecated Use
+     *             {@link #startReceiver(InetAddress, int, boolean, Receiver)}
+     *             instead.
      */
     public byte[] receiveData(int bufferSize, boolean ignoreOwnSentPacket)
             throws MulticastException {
         return receiveDataWithDetail(bufferSize, ignoreOwnSentPacket).buffer;
     }
 
+    /**
+     * Receive data from the multicast group which the most recently joined, and
+     * return the detailed data.
+     * 
+     * @param bufferSize
+     * @param ignoreOwnSentPacket
+     * @return
+     * @throws MulticastException
+     * @deprecated Use
+     *             {@link #startReceiver(InetAddress, int, boolean, Receiver)}
+     *             instead.
+     */
     public ReceivedData receiveDataWithDetail(int bufferSize,
             boolean ignoreOwnSentPacket) throws MulticastException {
         byte[] buffer = new byte[bufferSize];
+        MulticastSocket socket = sockets.get(this.latestGroupAddress);
 
         // Build packet and receive data into it
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         InetAddress sourceAddress;
         try {
             while (true) {
-                this.socket.receive(packet);
+                socket.receive(packet);
 
                 sourceAddress = packet.getAddress();
 
@@ -206,12 +267,86 @@ public class MulticastManager {
     }
 
     /**
+     * An interface of "Receiver"
+     */
+    public interface Receiver {
+        public void run(ReceivedData receivedData);
+    }
+
+    /**
+     * Start the receiver thread correspond to groupAddress
+     * 
+     * @param groupAddress
+     * @param bufferSize
+     *            Size of the buffer
+     * @param ignoreOwnSentPacket
+     *            Ignore the packet which I sent. See
+     *            {@link java.net.MulticastSocket#setLoopbackMode(boolean)}
+     * @param callback
+     *            A method which execute after receive an any packet
+     * @throws MulticastException
+     */
+    public void startReceiver(final InetAddress groupAddress,
+            final int bufferSize, boolean ignoreOwnSentPacket,
+            final Receiver callback) throws MulticastException {
+        /* Get the socket and set the "Loopback Mode" */
+        final MulticastSocket socket = sockets.get(groupAddress);
+        try {
+            socket.setLoopbackMode(ignoreOwnSentPacket);
+        } catch (SocketException e) {
+            throw new MulticastException(e);
+        }
+
+        Thread receiver = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isJoined(groupAddress)) {
+                    byte[] buffer = new byte[bufferSize];
+                    DatagramPacket packet = new DatagramPacket(buffer,
+                            buffer.length);
+
+                    try {
+                        /* Wait here while receive an any packet */
+                        socket.receive(packet);
+
+                        /* Format received packet into ReceivedData */
+                        ReceivedData receivedData = new ReceivedData();
+                        receivedData.buffer = buffer;
+                        receivedData.sourceAddress = packet.getAddress();
+                        receivedData.sourcePort = packet.getPort();
+                        receivedData.groupAddress = socket.getInetAddress();
+                        receivedData.targetPort = socket.getLocalPort();
+
+                        /* Execute the callback function */
+                        callback.run(receivedData);
+                    } catch (IOException e) {
+                        /*
+                         * This exception may cause if the socket is already
+                         * left from the group. So now we can simply ignore this
+                         * exception.
+                         */
+                        break;
+                    }
+                }
+            }
+        });
+        receiver.start();
+    }
+
+    /**
      * Contain received data, include source address and port.
      */
     public class ReceivedData {
+        /** Bytes of data which received. */
         public byte[] buffer;
+        /** Source address (which means remote address) */
         public InetAddress sourceAddress;
+        /** Group address */
+        public InetAddress groupAddress;
+        /** Source port */
         public int sourcePort;
+        /** Target port (which means local port) */
+        public int targetPort;
     }
 
     /**
@@ -245,12 +380,22 @@ public class MulticastManager {
     }
 
     /**
-     * Check is joining the multicast group or not.
+     * Check joining an any multicast group or not.
      * 
-     * @return true if joining the multicast group
+     * @return true if joining an any multicast group
      */
     public boolean isJoined() {
-        return this.joined;
+        return !this.sockets.isEmpty();
+    }
+
+    /**
+     * Check joining the multicast group or not.
+     * 
+     * @param groupAddress
+     * @return True if joined
+     */
+    public boolean isJoined(InetAddress groupAddress) {
+        return sockets.containsKey(groupAddress);
     }
 
     /**
