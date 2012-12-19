@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
@@ -428,5 +429,14 @@ public class MulticastManager {
         }
 
         return v6Addresses;
+    }
+
+    /**
+     * Return the set of joined group addresses
+     * 
+     * @return set of joined group addresses
+     */
+    public Set<InetAddress> getJoinedGroupAddress() {
+        return sockets.keySet();
     }
 }
